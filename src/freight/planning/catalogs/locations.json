@@ -1,0 +1,26 @@
+{
+  "_note": "City -> nearest gateway port / airport. Keys are lower-case, accent-free city names.",
+  "cities": {
+    "zacatecas":       {"country": "MX", "port": "MXZLO", "airport": "MEX"},
+    "mexico city":     {"country": "MX", "port": "MXVER", "airport": "MEX"},
+    "ciudad de mexico":{"country": "MX", "port": "MXVER", "airport": "MEX"},
+    "guadalajara":     {"country": "MX", "port": "MXZLO", "airport": "GDL"},
+    "veracruz":        {"country": "MX", "port": "MXVER", "airport": "VER"},
+    "manzanillo":      {"country": "MX", "port": "MXZLO", "airport": "GDL"},
+    "berlin":          {"country": "DE", "port": "DEHAM", "airport": "BER"},
+    "hamburg":         {"country": "DE", "port": "DEHAM", "airport": "HAM"},
+    "bremen":          {"country": "DE", "port": "DEBRV", "airport": "BRE"},
+    "munich":          {"country": "DE", "port": "DEHAM", "airport": "MUC"},
+    "munchen":         {"country": "DE", "port": "DEHAM", "airport": "MUC"},
+    "frankfurt":       {"country": "DE", "port": "DEHAM", "airport": "FRA"},
+    "cologne":         {"country": "DE", "port": "DEBRV", "airport": "CGN"},
+    "koln":            {"country": "DE", "port": "DEBRV", "airport": "CGN"}
+  },
+  "ports": {
+    "MXZLO": "Manzanillo", "MXVER": "Veracruz", "DEHAM": "Hamburg", "DEBRV": "Bremerhaven"
+  },
+  "airports": {
+    "MEX": "Mexico City", "GDL": "Guadalajara", "VER": "Veracruz", "BER": "Berlin Brandenburg",
+    "HAM": "Hamburg", "BRE": "Bremen", "MUC": "Munich", "FRA": "Frankfurt", "CGN": "Cologne Bonn"
+  }
+}

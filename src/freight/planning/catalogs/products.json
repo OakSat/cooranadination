@@ -1,0 +1,11 @@
+{
+  "_note": "Corona export packaging assumptions used to derive cargo when the customer gives only a quantity.",
+  "pallet_tare_kg": 25,
+  "units_per_case": 24,
+  "pallet_dims_cm": {"EUR": [120, 80], "US": [122, 102]},
+  "products": {
+    "bottles": {"case_unit": "cases", "unit_weight_kg": 10.4, "units_per_pallet": 84, "pallet_height_cm": 155, "stackable": false, "pallet_type": "US"},
+    "cans":    {"case_unit": "cases", "unit_weight_kg": 9.0,  "units_per_pallet": 120, "pallet_height_cm": 115, "stackable": true,  "pallet_type": "US"},
+    "kegs":    {"case_unit": "kegs",  "unit_weight_kg": 62.5, "units_per_pallet": 12,  "pallet_height_cm": 135, "stackable": false, "pallet_type": "US"}
+  }
+}

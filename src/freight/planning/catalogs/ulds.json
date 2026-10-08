@@ -1,0 +1,8 @@
+{
+  "_note": "Simplified ULD catalog. max_height_cm is the usable contour height per aircraft type.",
+  "ulds": [
+    {"code": "AKE", "name": "LD3 container", "base_length_cm": 156, "base_width_cm": 153, "max_height_cm": {"passenger": 163, "freighter": 163}, "max_gross_kg": 1588, "tare_kg": 82},
+    {"code": "PAG", "name": "88x125 in pallet (P1P)", "base_length_cm": 318, "base_width_cm": 224, "max_height_cm": {"passenger": 163, "freighter": 244}, "max_gross_kg": 6033, "tare_kg": 110},
+    {"code": "PMC", "name": "96x125 in pallet (P6P)", "base_length_cm": 318, "base_width_cm": 244, "max_height_cm": {"passenger": 163, "freighter": 300}, "max_gross_kg": 6804, "tare_kg": 120}
+  ]
+}
