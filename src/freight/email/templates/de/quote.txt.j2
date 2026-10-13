@@ -1,0 +1,14 @@
+Guten Tag{% if name %} {{ name }}{% endif %},
+
+{% if price_update %}der Preis Ihrer gewählten Option hat sich beim Spediteur geändert. Hier sind die aktualisierten Angebote:{% else %}hier sind Ihre Versandoptionen für {{ cargo }} nach {{ destination }}:{% endif %}
+
+{% for o in options %}{{ loop.index }}) {{ o.labels }}: {{ o.mode }} – {{ o.service }} ({{ o.carrier }})
+   Abfahrt {{ o.departure }}, Ankunft {{ o.arrival }} ({{ o.transit_days }} Tage)
+   Preis: {{ o.price }}{% if o.last_mile %} inkl. LKW-Zustellung {{ o.last_mile }}{% endif %}
+   Diese Option wählen: {{ o.link }}
+
+{% endfor %}Die Preise gelten bis {{ valid_until }}. Nichts wird gebucht, bevor Sie eine Option bestätigen.
+
+Mit freundlichen Grüßen
+Corona Export Logistics
+Referenz: {{ ref }}

@@ -1,0 +1,9 @@
+{
+  "app": "uv run python app.py",
+  "watch": {"include": ["**"], "exclude": ["build/**", "cdk.out/**"]},
+  "context": {
+    "@aws-cdk/aws-lambda:recognizeLayerVersion": true,
+    "@aws-cdk/core:checkSecretUsage": true,
+    "@aws-cdk/aws-iam:minimizePolicies": true
+  }
+}

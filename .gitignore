@@ -9,3 +9,5 @@ cdk.out/
 *.egg-info/
 .env
 .DS_Store
+infra/build/
+tests/eval/results/

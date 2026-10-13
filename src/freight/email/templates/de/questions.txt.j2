@@ -1,0 +1,11 @@
+Guten Tag{% if name %} {{ name }}{% endif %},
+
+vielen Dank für Ihre Anfrage. Damit wir Ihnen passende Versandoptionen anbieten können, benötigen wir noch folgende Angaben:
+
+{% for q in questions %}{{ loop.index }}. {{ q }}
+{% endfor %}
+Antworten Sie einfach auf diese E-Mail. Alle übrigen Angaben haben wir bereits notiert.
+
+Mit freundlichen Grüßen
+Corona Export Logistics
+Referenz: {{ ref }}
