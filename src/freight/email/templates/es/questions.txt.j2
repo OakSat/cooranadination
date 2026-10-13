@@ -1,0 +1,11 @@
+Hola{% if name %} {{ name }}{% endif %},
+
+gracias por su solicitud. Para preparar las opciones de envío necesitamos todavía:
+
+{% for q in questions %}{{ loop.index }}. {{ q }}
+{% endfor %}
+Basta con responder a este correo. Ya hemos anotado todo lo demás que nos indicó.
+
+Saludos cordiales
+Corona Export Logistics
+Referencia: {{ ref }}

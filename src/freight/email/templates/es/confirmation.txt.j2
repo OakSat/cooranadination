@@ -1,0 +1,12 @@
+Hola{% if name %} {{ name }}{% endif %},
+
+su envío está reservado.
+
+Tramo principal: {{ main.service }} ({{ main.carrier }}), reserva {{ main.ref }}
+   Salida {{ main.departure }}, llegada {{ main.arrival }}
+Entrega en camión: {{ truck.carrier }}, reserva {{ truck.ref }}, entrega el {{ truck.delivery }}
+Precio total: {{ total }}
+
+Saludos cordiales
+Corona Export Logistics
+Referencia: {{ ref }}

@@ -1,0 +1,12 @@
+Guten Tag{% if name %} {{ name }}{% endif %},
+
+Ihre Sendung ist gebucht.
+
+Hauptlauf: {{ main.service }} ({{ main.carrier }}), Buchungsnummer {{ main.ref }}
+   Abfahrt {{ main.departure }}, Ankunft {{ main.arrival }}
+LKW-Zustellung: {{ truck.carrier }}, Buchungsnummer {{ truck.ref }}, Zustellung am {{ truck.delivery }}
+Gesamtpreis: {{ total }}
+
+Mit freundlichen Grüßen
+Corona Export Logistics
+Referenz: {{ ref }}

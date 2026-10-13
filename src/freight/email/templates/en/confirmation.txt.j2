@@ -1,0 +1,12 @@
+Hello{% if name %} {{ name }}{% endif %},
+
+your shipment is booked.
+
+Main leg: {{ main.service }} ({{ main.carrier }}), booking {{ main.ref }}
+   Departs {{ main.departure }}, arrives {{ main.arrival }}
+Truck delivery: {{ truck.carrier }}, booking {{ truck.ref }}, delivery on {{ truck.delivery }}
+Total price: {{ total }}
+
+Best regards
+Corona Export Logistics
+Reference: {{ ref }}

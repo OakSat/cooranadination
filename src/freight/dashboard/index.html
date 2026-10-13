@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Freight Rep Desk</title>
+<style>
+:root {
+  --bg: #f7f6f2; --panel: #ffffff; --fg: #1c1c1a; --muted: #6a6963; --line: #e4e2da;
+  --accent: #1f6f50; --accent-fg: #ffffff; --warn: #9a5b00; --warn-bg: #fff3dc;
+  --bad: #a3271f; --bad-bg: #fde8e6; --ok-bg: #e5f3ec; --mark: #fff0a8; --mark-fg: #1c1c1a;
+  --chip: #efeee8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141413; --panel: #1d1d1b; --fg: #ebeae4; --muted: #a09f97; --line: #33322e;
+    --accent: #5fc49a; --accent-fg: #0f2a1f; --warn: #f0b860; --warn-bg: #3a2c12;
+    --bad: #f08a80; --bad-bg: #3d1d1a; --ok-bg: #173327; --mark: #6b5a12; --mark-fg: #fff7d6;
+    --chip: #2a2a27;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141413; --panel: #1d1d1b; --fg: #ebeae4; --muted: #a09f97; --line: #33322e;
+  --accent: #5fc49a; --accent-fg: #0f2a1f; --warn: #f0b860; --warn-bg: #3a2c12;
+  --bad: #f08a80; --bad-bg: #3d1d1a; --ok-bg: #173327; --mark: #6b5a12; --mark-fg: #fff7d6;
+  --chip: #2a2a27;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 system-ui, -apple-system, sans-serif; }
+header { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 2; }
+header h1 { font-size: 16px; margin: 0; }
+header .spacer { flex: 1; }
+button { font: inherit; border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+button.danger { color: var(--bad); }
+button:disabled { opacity: .5; cursor: default; }
+main { display: grid; grid-template-columns: 320px 1fr; min-height: calc(100vh - 53px); }
+@media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+nav { border-right: 1px solid var(--line); padding: 12px; overflow: auto; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.tabs button.active { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.order { display: block; width: 100%; text-align: left; margin-bottom: 8px; padding: 10px; border-radius: 10px; }
+.order.active { outline: 2px solid var(--accent); }
+.order .id { font-weight: 600; }
+.order .sub { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+section.detail { padding: 16px; overflow: auto; min-width: 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.card h2 { font-size: 15px; margin: 0 0 12px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--chip); font-size: 12px; }
+.chip.explicit { background: var(--ok-bg); }
+.chip.inferred { background: var(--warn-bg); color: var(--warn); }
+.chip.missing, .chip.conflicting { background: var(--bad-bg); color: var(--bad); }
+.reasons { background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 8px 12px; margin: 8px 0 0; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 500; font-size: 12px; }
+.scroll { overflow-x: auto; }
+pre.email { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--bg); border-radius: 8px; padding: 12px; margin: 8px 0 0; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+mark { background: var(--mark); color: var(--mark-fg); border-radius: 3px; padding: 0 2px; }
+.muted { color: var(--muted); }
+.events li { margin-bottom: 4px; }
+input, select, textarea { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); max-width: 100%; }
+textarea { width: 100%; min-height: 100px; }
+.empty { color: var(--muted); padding: 24px; text-align: center; }
+#login { max-width: 420px; margin: 80px auto; text-align: center; padding: 0 16px; }
+</style>
+<script src="/dashboard/config.js"></script>
+</head>
+<body>
+<div id="login" hidden>
+  <h1>Freight Rep Desk</h1>
+  <p class="muted">Review extracted orders, approve quotes, and resolve escalations.</p>
+  <button class="primary" id="signin">Sign in</button>
+</div>
+<div id="app" hidden>
+  <header>
+    <h1>Freight Rep Desk</h1>
+    <span class="spacer"></span>
+    <button id="simulate-open">Simulate email</button>
+    <button id="refresh">Refresh</button>
+    <button id="signout">Sign out</button>
+  </header>
+  <main>
+    <nav>
+      <div class="tabs" id="tabs"></div>
+      <div id="list"></div>
+    </nav>
+    <section class="detail" id="detail"><div class="empty">Pick an order on the left.</div></section>
+  </main>
+</div>
+<script src="/dashboard/app.js"></script>
+</body>
+</html>

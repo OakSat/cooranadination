@@ -1,0 +1,14 @@
+Hola{% if name %} {{ name }}{% endif %},
+
+{% if price_update %}el transportista cambió el precio de la opción elegida. Estas son las ofertas actualizadas:{% else %}estas son sus opciones de envío para {{ cargo }} a {{ destination }}:{% endif %}
+
+{% for o in options %}{{ loop.index }}) {{ o.labels }}: {{ o.mode }} – {{ o.service }} ({{ o.carrier }})
+   Salida {{ o.departure }}, llegada {{ o.arrival }} ({{ o.transit_days }} días)
+   Precio: {{ o.price }}{% if o.last_mile %} incl. entrega en camión {{ o.last_mile }}{% endif %}
+   Elegir esta opción: {{ o.link }}
+
+{% endfor %}Los precios son válidos hasta {{ valid_until }}. No se reserva nada hasta que usted confirme una opción.
+
+Saludos cordiales
+Corona Export Logistics
+Referencia: {{ ref }}

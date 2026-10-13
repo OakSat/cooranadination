@@ -1,0 +1,14 @@
+Hello{% if name %} {{ name }}{% endif %},
+
+{% if price_update %}the carrier changed the price of the option you chose. Here are the updated offers:{% else %}here are your shipping options for {{ cargo }} to {{ destination }}:{% endif %}
+
+{% for o in options %}{{ loop.index }}) {{ o.labels }}: {{ o.mode }} – {{ o.service }} ({{ o.carrier }})
+   Departs {{ o.departure }}, arrives {{ o.arrival }} ({{ o.transit_days }} days)
+   Price: {{ o.price }}{% if o.last_mile %} incl. truck delivery {{ o.last_mile }}{% endif %}
+   Choose this option: {{ o.link }}
+
+{% endfor %}Prices are valid until {{ valid_until }}. Nothing is booked until you confirm an option.
+
+Best regards
+Corona Export Logistics
+Reference: {{ ref }}

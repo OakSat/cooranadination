@@ -211,23 +211,30 @@ The README includes a sequence diagram of exactly this race. A `scripts/chaos_ra
 ## 3. Repository layout
 
 ```
-pyproject.toml            # uv; deps: pydantic, anthropic[bedrock], aws-lambda-powertools, boto3, httpx, tenacity, jinja2, pypdf
+pyproject.toml            # uv; runtime deps + dev + infra (CDK, cdk-nag v2) groups
 src/freight/
-  domain/       models.py  state.py  rules.py  policy.py
-  extraction/   extractor.py  merge.py  provenance.py  llm/{port,bedrock,fake}.py  prompts/
-  planning/     ocean.py  air.py  alternatives.py  catalogs/*.json
+  domain/       models.py  state.py  rules.py  policy.py  defaults.py  thread.py
+  extraction/   extractor.py  merge.py  provenance.py  normalize.py  injection.py  schema.py
+                prompt.py  evaluation.py  llm/{port,bedrock,fake,pricing}.py  prompts/
+  planning/     cargo.py  ocean.py  air.py  alternatives.py  quoting.py  catalogs/*.json
   email/        parse.py  threading.py  compose.py  outbox.py  templates/{de,es,en}/
   providers/    client.py  mock_app.py  cache.py
-  persistence/  repo.py  keys.py
-  handlers/     ingest.py extract.py plan.py quote.py send_outbox.py rep_api.py choose.py book.py revalidate.py cache_invalidate.py
-infra/          app.py  stacks/{storage,workflow,api,dashboard,observability}_stack.py  statemachine/order.asl.json (or CDK constructs)
-dashboard/      index.html  app.js (vanilla JS, Cognito hosted-UI login)
-tests/          unit/  integration/ (moto)  fixtures/emails/{de,es,en}/*.eml  eval/golden.jsonl
-scripts/        bootstrap_check.py  send_inbound.py  demo_e2e.py  chaos_race.py  report_kpis.py  eval_extraction.py  teardown.sh
-docs/           architecture.md (diagrams, topic answers, race sequence diagram)
+  persistence/  repo.py  keys.py  tables.py
+  workflow/     graph.py (the state machine)  steps.py  ingest.py  actions.py  outbox_sender.py
+                links.py  ports.py  deps.py
+  handlers/     workflow.py (dispatcher for extract|workflow|quote|book|wait)  ingest.py
+                send_outbox.py  rep_api.py  choose.py  mock_provider.py  cache_invalidate.py
+  observability/ metrics.py  logging.py
+  dashboard/    index.html  app.js (vanilla JS, Cognito hosted UI + PKCE; served by rep_api)
+  config.py
+infra/          app.py  build.py  stacks/{storage,api,workflow,observability}_stack.py  common.py
+tests/          unit/  integration/ (moto, local_sfn.py, test_order_flow.py)  fixtures/emails/  eval/golden.jsonl
+scripts/        verify.py  bootstrap_check.py  seed.py  send_inbound.py  demo_e2e.py  chaos_race.py
+                report_kpis.py  eval_extraction.py  teardown.sh
+docs/           architecture.md (topic answers, diagrams, race sequence diagram)
 ```
 
-Dev commands (to be added to CLAUDE.md once they exist): `uv sync`, `uv run pytest`, `uv run pytest tests/unit/test_ocean.py::test_weight_limited`, `uv run ruff check . && uv run mypy src`, `cd infra && uv run cdk synth|deploy|destroy`.
+Dev commands are in CLAUDE.md. `uv run scripts/verify.py` runs every phase's "done when" check (§4, §8).
 
 ---
 
@@ -362,3 +369,30 @@ Guardrails in code:
 3. `scripts/chaos_race.py` shows 1 execution, 1 quote item, 1 SENT outbox per purpose, a stale-price rejection event, and 1 booking.
 4. The extraction eval reports ≥ 90% field accuracy, and the injection case is flagged.
 5. Cost Explorer (filtered by the `project=freight-demo` tag) is under $20 after the demo week. After `teardown.sh`, no stack resources remain.
+
+---
+
+## 9. As-built notes
+
+Everything in §1–8 is built. These are the places where the build differs from the plan, and why.
+
+| Plan | As built | Why |
+|---|---|---|
+| 5 stacks incl. FreightDashboard; dashboard on S3 website hosting | 4 stacks; `rep_api` serves the dashboard at `/dashboard` | Cognito's hosted UI needs an HTTPS callback; S3 website hosting is HTTP-only, and API Gateway already gives HTTPS without CloudFront |
+| Outbox sender claims rows from an SQS `freight-outbox` queue | DynamoDB stream with a filter on new `OUTBOX#` rows, failures to `freight-outbox-dlq` | The row *is* the event: no second write that could be lost between the transaction and a queue |
+| `freight-archive-…` bucket for prompts/responses | Not built; the `EXTRACTION#n` snapshot stores the parsed output, model, prompt version, usage and cost | Raw responses add cost without adding audit value beyond the snapshot |
+| One Lambda per step (`plan`, `revalidate`, …) | `freight-extract`, `-workflow`, `-quote`, `-book`, `-wait` share a dispatcher (`handlers/workflow.py`); IAM still differs per function | Fewer functions to deploy and watch; least privilege is kept per function |
+| Docker bundles Lambda dependencies | `infra/build.py` uses `uv pip install --python-platform aarch64-manylinux2014` | No Docker daemon needed; same wheels, built in about a second |
+| State machine in ASL or CDK constructs | One Python graph (`workflow/graph.py`) rendered to ASL; the local tests interpret the same graph | What the end-to-end tests run is what gets deployed |
+| `OrderStateChanged` EventBridge rule → metrics | Metrics are emitted by the steps (EMF) | One less moving part; the audit trail already records every change |
+| cdk-nag (latest) | cdk-nag 2.x | v3 removed stack-level suppressions in favour of per-finding acknowledgements; v2's API is the stable, documented one |
+| Inbound via CDK context `inboundMode=ses` | Appendix 1 of the guide sets up SES receiving in the console | The receipt rule set must be *activated*, which CDK can't do without a custom resource; for an optional appendix the console is clearer |
+
+Behaviour decided while building (each covered by tests):
+- **Pickup defaults** to the Zacatecas brewery (source `system`) instead of asking the bar where Corona ships from (`domain/defaults.py`).
+- **Free-text replies to a quote** don't re-quote automatically; the rep sees them and can *re-extract*. Approval is only ever the signed link.
+- **A re-quote after a price change** skips a second rep review if the request is unchanged and prices rose < 15% over what the rep approved (`domain/policy.py`).
+- **A re-quote bypasses the quote cache**, so it never depends on the invalidation event arriving first.
+- **Early answers:** if the customer or rep answers before the workflow has parked its task token, the answer is stored on META and the waiting step resumes itself (`workflow/steps.py` `wait_for`/`resume`).
+- **Outbox gap:** a row left in `SENDING` (crash after SES accepted it) is not resent; `report_kpis.py` lists it. At-most-once beats a duplicate quote.
+- **Model:** Haiku 4.5 through the `us.` inference profile (the legacy `bedrock-runtime` path) by default; an `anthropic.`-prefixed ID switches the adapter to the Mantle client. Claude Haiku 5.5 is cheaper ($0.10 / $0.50 per MTok) and is a one-line config change (`-c bedrockModelId=…`) if your Bedrock console offers it; run the golden-set eval before switching.
